@@ -1,0 +1,20 @@
+# ===== Núcleo del sistema RAG =====
+streamlit>=1.49.0          # Dashboard interactivo
+chromadb>=0.5.5            # Base de datos vectorial (indexación con embeddings)
+onnxruntime>=1.18.0        # Backend del modelo de embeddings por defecto de Chroma
+pypdf>=5.1.0              # Carga y procesamiento de PDFs
+
+# ===== LLM para el chatbot RAG =====
+groq>=0.13.0              # Proveedor por defecto (modelos open source: Llama 3)
+requests>=2.32.0          # Cliente HTTP (proveedor alternativo Ollama)
+
+# ===== Machine Learning =====
+scikit-learn>=1.5.0       # KMeans (clustering), PCA, TF-IDF, silhouette
+pandas>=2.2.0
+numpy>=1.26.0
+
+# ===== Visualización =====
+plotly>=5.24.0
+
+# ===== Utilidades =====
+python-dotenv>=1.0.1      # Carga de variables de entorno (.env)

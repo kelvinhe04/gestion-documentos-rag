@@ -1,0 +1,37 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Variables de entorno y secretos
+.env
+.streamlit/secrets.toml
+
+# Datos generados / pesados
+data/chroma/
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Documentación generada
+docs/*.docx
+~$*
+
+# Modelos descargados / caché
+.cache/
+*.onnx
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
