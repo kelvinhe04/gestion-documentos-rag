@@ -15,24 +15,28 @@ from src.ml import clustering
 from src.pipeline import get_statistics
 
 
-def page_config(title: str, icon: str = "📚") -> None:
-    """Configuración común de página."""
-    st.set_page_config(page_title=f"{title} · RAG Académico", page_icon=icon, layout="wide")
+def page_config(title: str, icon: str = "") -> None:
+    """No-op: set_page_config está centralizado en streamlit_app.py."""
 
 
 def sidebar_status() -> None:
     """Muestra el estado del sistema en la barra lateral (todas las páginas)."""
     with st.sidebar:
-        st.markdown("### ⚙️ Estado del sistema")
+        st.markdown(":material/monitor_heart: **Estado del sistema**")
         st.caption(f"**LLM:** {config.llm_status()}")
         try:
             n_chunks = vector_store.count_chunks()
         except Exception:  # noqa: BLE001
             n_chunks = 0
         st.caption(f"**Fragmentos indexados:** {n_chunks}")
-        st.caption(f"**Colección:** `{config.COLLECTION_NAME}`")
         st.divider()
         st.caption("Grupo 7 · Gestión de Documentos Académicos con RAG")
+
+
+@st.cache_data(show_spinner=False)
+def list_documents_cached(version: int):
+    """Lista de documentos únicos (cacheada por versión de datos)."""
+    return vector_store.list_documents()
 
 
 @st.cache_data(show_spinner=False)

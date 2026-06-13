@@ -16,9 +16,10 @@ from src.rag import llm
 SYSTEM_PROMPT = (
     "Eres un asistente académico experto. Respondes preguntas ÚNICAMENTE con "
     "base en el CONTEXTO proporcionado, que proviene de documentos académicos. "
-    "Si la respuesta no está en el contexto, indícalo claramente en lugar de "
-    "inventar. Responde en español, de forma clara y precisa, y cuando sea útil "
-    "menciona el título del documento del que proviene la información."
+    "Si la respuesta no está en el contexto, indícalo claramente en lugar de inventar. "
+    "Responde en español, de forma directa y conversacional. "
+    "NO menciones números de fragmento, ni de dónde sacaste la información: "
+    "simplemente responde la pregunta como si lo supieras."
 )
 
 PROMPT_TEMPLATE = """Usa el siguiente CONTEXTO para responder la PREGUNTA.
@@ -28,16 +29,12 @@ CONTEXTO:
 
 PREGUNTA: {question}
 
-RESPUESTA (basada solo en el contexto anterior):"""
+RESPUESTA:"""
 
 
 def _build_context(hits: List[Dict[str, Any]]) -> str:
     """Construye el bloque de contexto a partir de los fragmentos recuperados."""
-    bloques = []
-    for i, hit in enumerate(hits, start=1):
-        titulo = hit["metadata"].get("title", "Documento")
-        bloques.append(f"[Fragmento {i} | Fuente: {titulo}]\n{hit['text']}")
-    return "\n\n".join(bloques)
+    return "\n\n".join(hit["text"] for hit in hits)
 
 
 def _extractive_answer(hits: List[Dict[str, Any]]) -> str:
@@ -54,16 +51,25 @@ def _extractive_answer(hits: List[Dict[str, Any]]) -> str:
     return "\n\n".join(partes)
 
 
-def answer(question: str, k: int | None = None) -> Dict[str, Any]:
+def answer(
+    question: str,
+    k: int | None = None,
+    doc_ids: List[str] | None = None,
+) -> Dict[str, Any]:
     """Responde una pregunta usando RAG.
 
     Devuelve un diccionario con:
         answer   -> texto de la respuesta
         sources  -> fragmentos recuperados (con título y score)
         provider -> proveedor de LLM usado ("groq" / "ollama" / "extractivo")
+
+    Si se pasa ``doc_ids``, la búsqueda se restringe a esos documentos.
     """
     k = k or config.TOP_K
-    hits = vector_store.search(question, k=k)
+    if doc_ids:
+        hits = vector_store.search_filtered(question, k=k, doc_ids=doc_ids)
+    else:
+        hits = vector_store.search(question, k=k)
 
     if not hits:
         return {

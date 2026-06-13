@@ -108,17 +108,18 @@ Copy-Item .env.example .env
 
 | Modelo | Parámetros | Velocidad | Mejor para | Estado |
 |---|---|---|---|---|
-| Llama 3.1 8B Instant | 8B | ⚡⚡⚡ Ultra rápido | Respuestas rápidas, tareas sencillas | ✅ **Default en este proyecto** |
+| Llama 3.3 70B Versatile | 70B | ⚡⚡ Rápido | Calidad alta, respuestas precisas | ✅ **Actual en este proyecto** |
+| Llama 3.1 8B Instant | 8B | ⚡⚡⚡ Ultra rápido | Respuestas rápidas, tareas sencillas | ✅ Gratis |
 | Llama 3.1 70B Versatile | 70B | ⚡⚡ Rápido | Mejor calidad, más inteligente | ✅ Gratis |
 | Llama 3.2 90B Vision | 90B | ⚡ Un poco lento | Análisis de imágenes + texto | ✅ Gratis |
 | Mixtral 8x7B | Mezcla | ⚡⚡ Rápido | Tareas variadas | ✅ Gratis |
 | Gemma 2 9B | 9B | ⚡⚡⚡ Ultra rápido | Alternativa ligera | ✅ Gratis |
 
-**Tu proyecto usa:** `llama-3.1-8b-instant` (el más rápido)
+**Tu proyecto usa:** `llama-3.3-70b-versatile` (potente y preciso)
 
 **Para cambiar de modelo,** edita `.env`:
 ```env
-GROQ_MODEL=llama-3.1-70b-versatile    # Más inteligente, más lento
+GROQ_MODEL=llama-3.3-70b-versatile    # Actual — recomendado
 ```
 
 O si no tienes API key, el sistema funciona en **modo extractivo** — sin LLM, solo muestra los fragmentos más relevantes directamente.

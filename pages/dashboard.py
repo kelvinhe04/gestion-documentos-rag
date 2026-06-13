@@ -7,34 +7,32 @@ import streamlit as st
 
 import app_helpers as ah
 
-ah.page_config("Dashboard", "📊")
 ah.sidebar_status()
 
-st.title("📊 Dashboard de Documentos")
+st.title("Dashboard de Documentos")
 st.caption("Estadísticas de la colección y agrupamiento temático con Machine Learning (KMeans).")
 
 version = ah.data_version()
 stats = ah.cached_statistics(version)
 
 if stats["n_documents"] == 0:
-    st.warning("No hay documentos indexados todavía. Ve a **📥 Ingesta de Documentos**.", icon="⚠️")
+    st.warning(
+        "No hay documentos indexados todavía. Ve a **Ingesta de Documentos**.",
+        icon=":material/warning:",
+    )
     st.stop()
 
-# ---------------------------------------------------------------------------
-# 1) Métricas generales
-# ---------------------------------------------------------------------------
+# ── Métricas generales ─────────────────────────────────────────────────────
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("📄 Documentos", stats["n_documents"])
-c2.metric("🧩 Fragmentos", stats["n_chunks"])
-c3.metric("📑 Páginas totales", stats["n_pages"])
+c1.metric("Documentos", stats["n_documents"])
+c2.metric("Fragmentos", stats["n_chunks"])
+c3.metric("Páginas totales", stats["n_pages"])
 prom = round(stats["n_chunks"] / stats["n_documents"], 1) if stats["n_documents"] else 0
 c4.metric("Fragmentos/doc (prom.)", prom)
 
 st.divider()
 
-# ---------------------------------------------------------------------------
-# 2) Distribución por fuente y por documento
-# ---------------------------------------------------------------------------
+# ── Distribución por fuente y por documento ────────────────────────────────
 col_a, col_b = st.columns(2)
 
 with col_a:
@@ -58,10 +56,8 @@ with col_b:
     fig2.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=320, yaxis=dict(autorange="reversed"))
     st.plotly_chart(fig2, width="stretch")
 
-# ---------------------------------------------------------------------------
-# 3) Tabla de documentos
-# ---------------------------------------------------------------------------
-st.subheader("📋 Documentos indexados")
+# ── Tabla de documentos ────────────────────────────────────────────────────
+st.subheader("Documentos indexados")
 tabla = df_docs[["title", "source", "num_pages", "chunks", "author"]].rename(
     columns={
         "title": "Título", "source": "Fuente", "num_pages": "Páginas",
@@ -72,10 +68,8 @@ st.dataframe(tabla, width="stretch", hide_index=True)
 
 st.divider()
 
-# ---------------------------------------------------------------------------
-# 4) Machine Learning: clustering temático (KMeans)
-# ---------------------------------------------------------------------------
-st.header("🤖 Agrupamiento temático (Machine Learning)")
+# ── Machine Learning: clustering temático (KMeans) ─────────────────────────
+st.header("Agrupamiento temático (Machine Learning)")
 st.caption(
     "Técnica de ML: **clustering con KMeans** sobre los embeddings de los "
     "documentos. Agrupa los documentos por similitud temática."
@@ -110,7 +104,6 @@ st.caption(
 df_clusters = pd.DataFrame(resultado["documents"])
 df_clusters["cluster"] = df_clusters["cluster"].astype(str)
 
-# Etiquetas legibles por cluster (términos TF-IDF más representativos).
 etiquetas = {
     str(cid): ", ".join(terms[:4]) if terms else f"Cluster {cid}"
     for cid, terms in resultado["top_terms"].items()

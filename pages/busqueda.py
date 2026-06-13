@@ -7,10 +7,9 @@ import streamlit as st
 import app_helpers as ah
 from src.indexing import vector_store
 
-ah.page_config("Búsqueda Semántica", "🔎")
 ah.sidebar_status()
 
-st.title("🔎 Búsqueda Semántica")
+st.title("Búsqueda Semántica")
 st.caption(
     "Encuentra fragmentos por **significado**, no por coincidencia exacta de "
     "palabras. Usa los embeddings y la distancia coseno de ChromaDB."
@@ -21,7 +20,10 @@ consulta = col1.text_input("¿Qué quieres buscar?", placeholder="ej. métodos d
 k = col2.number_input("Resultados", min_value=1, max_value=20, value=5)
 
 if ah.data_version() == 0:
-    st.warning("No hay documentos indexados. Ve a **📥 Ingesta de Documentos** primero.", icon="⚠️")
+    st.warning(
+        "No hay documentos indexados. Ve a **Ingesta de Documentos** primero.",
+        icon=":material/warning:",
+    )
 
 if consulta:
     with st.spinner("Buscando..."):
@@ -32,7 +34,6 @@ if consulta:
     else:
         st.success(f"{len(hits)} resultado(s) encontrados.")
 
-        # Tabla resumen.
         tabla = pd.DataFrame(
             [
                 {

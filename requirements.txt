@@ -1,7 +1,8 @@
 # ===== Núcleo del sistema RAG =====
 streamlit>=1.49.0          # Dashboard interactivo
 chromadb>=0.5.5            # Base de datos vectorial (indexación con embeddings)
-onnxruntime>=1.18.0        # Backend del modelo de embeddings por defecto de Chroma
+onnxruntime>=1.18.0        # Backend ONNX para embeddings
+fastembed>=0.4.0           # Embeddings multilingües vía ONNX (sin PyTorch)
 pypdf>=5.1.0              # Carga y procesamiento de PDFs
 
 # ===== LLM para el chatbot RAG =====
