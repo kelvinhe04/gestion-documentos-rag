@@ -105,7 +105,58 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
         height=0,
     )
 
+st.markdown(
+    """
+    <style>
+    /* ── Burbujas de chat ─────────────────────────────────────────────────── */
+    [data-testid="stChatMessage"] {
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 14px !important;
+        padding: 0.85rem 1rem !important;
+        margin-bottom: 0.35rem;
+        background: rgba(22,27,39,0.6);
+        backdrop-filter: blur(6px);
+        transition: border-color 0.2s ease;
+    }
+    [data-testid="stChatMessage"]:hover {
+        border-color: rgba(56,189,248,0.22);
+    }
+    /* Avatar icon color → electric blue */
+    [data-testid="stChatMessage"] [data-testid="stChatMessageAvatarUser"],
+    [data-testid="stChatMessage"] [data-testid="stChatMessageAvatarAssistant"] {
+        background: rgba(14,165,233,0.12) !important;
+        border: 1px solid rgba(56,189,248,0.25) !important;
+        border-radius: 9px !important;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 ah.sidebar_status()
+
+
+@st.dialog("Eliminar chat")
+def _dialog_eliminar_chat(session_id: str, session_name: str) -> None:
+    st.markdown(
+        f"¿Seguro que quieres eliminar **{session_name}**?  \n"
+        "Se perderá todo el historial de mensajes de este chat."
+    )
+    st.caption("Esta acción no se puede deshacer.")
+    st.write("")
+    ca, cb = st.columns(2)
+    if ca.button("Eliminar", type="primary", use_container_width=True):
+        chat_sessions.delete_session(session_id)
+        remaining = chat_sessions.list_sessions()
+        st.session_state.current_session = remaining[0]["id"]
+        st.session_state.pop("_del_chat", None)
+        st.session_state.pop("_loaded_session", None)
+        st.rerun()
+    if cb.button("Cancelar", use_container_width=True):
+        st.session_state.pop("_del_chat", None)
+        st.rerun()
+
 
 # ── Cargar y validar sesiones ───────────────────────────────────────────────
 sessions = chat_sessions.list_sessions()
@@ -153,10 +204,7 @@ with st.sidebar:
         key="btn_del",
         disabled=len(sessions) <= 1,
     ):
-        chat_sessions.delete_session(sid)
-        remaining = chat_sessions.list_sessions()
-        st.session_state.current_session = remaining[0]["id"]
-        st.rerun()
+        st.session_state["_del_chat"] = (sid, session_name_map.get(sid, sid))
 
     st.divider()
 
@@ -218,6 +266,11 @@ with st.sidebar:
         st.session_state.pop("_loaded_session", None)
         st.rerun()
 
+# ── Modal de confirmación de eliminación ────────────────────────────────────
+if "_del_chat" in st.session_state:
+    _del_id, _del_name = st.session_state["_del_chat"]
+    _dialog_eliminar_chat(_del_id, _del_name)
+
 # ── Sincronizar historial desde JSON al cambiar de sesión ───────────────────
 if st.session_state.get("_loaded_session") != sid:
     fresh = chat_sessions.get_session(sid) or {}
@@ -244,14 +297,29 @@ if not active_docs:
     )
     st.stop()
 
-st.info(
-    f"Contexto: **{len(active_docs)}** documento(s) seleccionado(s).",
-    icon=":material/filter_alt:",
+st.markdown(
+    f"""
+    <div style="display:flex;align-items:center;gap:0.7rem;
+                background:rgba(56,189,248,0.07);
+                border:1px solid rgba(56,189,248,0.2);
+                border-radius:10px;padding:0.65rem 1rem;margin-bottom:0.4rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        <span style="color:#7dd3fc;font-weight:500;font-size:0.9rem;">
+            Contexto:&nbsp;<strong style="color:#38bdf8;">{len(active_docs)}</strong>
+            &nbsp;documento(s) seleccionado(s).
+        </span>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
 # Historial de mensajes
 for msg in st.session_state.get("mensajes", []):
-    with st.chat_message(msg["role"]):
+    _av = ":material/person:" if msg["role"] == "user" else ":material/smart_toy:"
+    with st.chat_message(msg["role"], avatar=_av):
         st.markdown(msg["content"])
         if msg.get("sources"):
             with st.expander(f"Fuentes ({len(msg['sources'])})"):
@@ -269,10 +337,10 @@ if pregunta := st.chat_input("Escribe tu pregunta..."):
     st.session_state.mensajes.append({"role": "user", "content": pregunta, "sources": []})
     chat_sessions.add_message(sid, "user", pregunta)
 
-    with st.chat_message("user"):
+    with st.chat_message("user", avatar=":material/person:"):
         st.markdown(pregunta)
 
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar=":material/smart_toy:"):
         with st.spinner("Buscando en los documentos y generando respuesta..."):
             resultado = rag_pipeline.answer(
                 pregunta,

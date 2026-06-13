@@ -9,42 +9,6 @@ import app_helpers as ah
 from src import chat_sessions, config, pipeline
 from src.indexing import vector_store
 
-# ── Animación del modal ────────────────────────────────────────────────────
-st.markdown(
-    """
-    <style>
-    @keyframes modal-in {
-        from { opacity: 0; transform: scale(0.90) translateY(-10px); }
-        to   { opacity: 1; transform: scale(1)    translateY(0);     }
-    }
-
-    /* Contenedor de scroll del modal → flex para centrar vertical y horizontal */
-    [data-baseweb="modal"] > div:last-child {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-    /* Caja del diálogo con animación */
-    [data-baseweb="dialog"] {
-        animation: modal-in 0.24s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-        margin: auto !important;
-    }
-
-    /* Botón destructivo en rojo dentro del modal */
-    [data-testid="stDialog"] .stButton button[kind="primary"] {
-        background: #dc2626;
-        border-color: #dc2626;
-    }
-    [data-testid="stDialog"] .stButton button[kind="primary"]:hover {
-        background: #b91c1c;
-        border-color: #b91c1c;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 ah.sidebar_status()
 
 st.title("Ingesta de Documentos")
@@ -178,6 +142,7 @@ else:
 
     # ── Cabecera con selector global ──────────────────────────────────────
     h0, h1, h2, h3, h4, h5 = st.columns([0.5, 3.5, 1, 1, 2, 1])
+    _prev_sel_todos = st.session_state.get("_prev_sel_todos", False)
     seleccionar_todos = h0.checkbox("", key="sel_todos", label_visibility="collapsed")
     h1.markdown("**Título**")
     h2.markdown("**Págs.**")
@@ -192,6 +157,9 @@ else:
         doc_id = doc["doc_id"]
         if seleccionar_todos:
             st.session_state[f"chk_{doc_id}"] = True
+        elif _prev_sel_todos and not seleccionar_todos:
+            # acaba de deseleccionarse → limpiar checkboxes individuales
+            st.session_state[f"chk_{doc_id}"] = False
 
         c0, c1, c2, c3, c4, c5 = st.columns([0.5, 3.5, 1, 1, 2, 1])
         checked = c0.checkbox("", key=f"chk_{doc_id}", label_visibility="collapsed")
@@ -204,6 +172,8 @@ else:
 
         if c5.button("Eliminar", key=f"del_{doc_id}", type="secondary"):
             st.session_state["_del_doc"] = doc
+
+    st.session_state["_prev_sel_todos"] = seleccionar_todos
 
     # ── Barra de acciones masivas ──────────────────────────────────────────
     if seleccionados:

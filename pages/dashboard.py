@@ -7,6 +7,17 @@ import streamlit as st
 
 import app_helpers as ah
 
+_PALETTE = [
+    "#38bdf8", "#22d3ee", "#34d399", "#60a5fa",
+    "#f59e0b", "#2dd4bf", "#a3e635", "#fb923c",
+]
+_LAYOUT = dict(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font_family="Inter, system-ui, sans-serif",
+    font_color="#e2e8f0",
+)
+
 ah.sidebar_status()
 
 st.title("Dashboard de Documentos")
@@ -41,8 +52,12 @@ with col_a:
         df_src = pd.DataFrame(
             {"Fuente": list(stats["by_source"].keys()), "Documentos": list(stats["by_source"].values())}
         )
-        fig = px.pie(df_src, names="Fuente", values="Documentos", hole=0.45)
-        fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=320)
+        fig = px.pie(
+            df_src, names="Fuente", values="Documentos", hole=0.45,
+            color_discrete_sequence=_PALETTE,
+        )
+        fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=320, **_LAYOUT)
+        fig.update_traces(textfont_color="#fff")
         st.plotly_chart(fig, width="stretch")
 
 with col_b:
@@ -51,9 +66,13 @@ with col_b:
     df_top = df_docs.sort_values("chunks", ascending=False).head(12)
     fig2 = px.bar(
         df_top, x="chunks", y="title", orientation="h",
-        labels={"chunks": "Fragmentos", "title": ""}, color="source",
+        labels={"chunks": "Fragmentos", "title": ""},
+        color="source", color_discrete_sequence=_PALETTE,
     )
-    fig2.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=320, yaxis=dict(autorange="reversed"))
+    fig2.update_layout(
+        margin=dict(t=10, b=10, l=10, r=10), height=320,
+        yaxis=dict(autorange="reversed"), **_LAYOUT,
+    )
     st.plotly_chart(fig2, width="stretch")
 
 # ── Tabla de documentos ────────────────────────────────────────────────────
@@ -118,9 +137,10 @@ with col_v1:
         df_clusters, x="x", y="y", color="cluster", hover_name="title",
         hover_data={"tema": True, "source": True, "x": False, "y": False},
         labels={"cluster": "Cluster"}, height=420,
+        color_discrete_sequence=_PALETTE,
     )
-    fig3.update_traces(marker=dict(size=14, line=dict(width=1, color="white")))
-    fig3.update_layout(margin=dict(t=10, b=10, l=10, r=10))
+    fig3.update_traces(marker=dict(size=15, line=dict(width=1.5, color="white")))
+    fig3.update_layout(margin=dict(t=10, b=10, l=10, r=10), **_LAYOUT)
     st.plotly_chart(fig3, width="stretch")
 
 with col_v2:

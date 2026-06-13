@@ -8,11 +8,52 @@ from src import config
 
 ah.sidebar_status()
 
-st.title("Sistema de Gestión de Documentos Académicos con RAG")
 st.markdown(
-    "**Grupo 7 — Proyecto Integrador.** Carga documentos académicos (PDFs), "
-    "indéxalos con embeddings en **ChromaDB** y haz preguntas sobre su contenido "
-    "mediante **RAG** (Retrieval-Augmented Generation)."
+    """
+    <div style="
+        background: linear-gradient(135deg, #060d1a 0%, #0c1e36 50%, #0a1f1c 100%);
+        border: 1px solid rgba(56,189,248,0.2);
+        border-radius: 18px;
+        padding: 2.2rem 2.6rem;
+        margin-bottom: 1.6rem;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.6), 0 0 60px rgba(14,165,233,0.06);
+        position: relative;
+        overflow: hidden;
+    ">
+        <div style="
+            font-size: 1.85rem;
+            font-weight: 800;
+            background: linear-gradient(120deg, #38bdf8, #22d3ee 50%, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.04em;
+            margin-bottom: 0.55rem;
+            line-height: 1.15;
+        ">Sistema de Gestión de Documentos Académicos</div>
+        <p style="color: rgba(226,232,240,0.75); margin: 0; font-size: 0.97rem; line-height: 1.65; font-weight: 400;">
+            <strong style="color: #7dd3fc;">Grupo 7 — Proyecto Integrador.</strong>
+            Carga documentos académicos (PDFs), indéxalos con embeddings en
+            <strong style="color: #34d399;">ChromaDB</strong> y haz preguntas sobre su contenido
+            mediante <strong style="color: #34d399;">RAG</strong> (Retrieval-Augmented Generation).
+        </p>
+        <div style="margin-top:1.1rem;display:flex;gap:0.65rem;flex-wrap:wrap;">
+            <span style="background:rgba(56,189,248,0.1);color:#7dd3fc;font-size:0.76rem;
+                         font-weight:600;padding:0.28rem 0.75rem;border-radius:20px;
+                         border:1px solid rgba(56,189,248,0.2);">ChromaDB</span>
+            <span style="background:rgba(56,189,248,0.1);color:#7dd3fc;font-size:0.76rem;
+                         font-weight:600;padding:0.28rem 0.75rem;border-radius:20px;
+                         border:1px solid rgba(56,189,248,0.2);">Sentence Transformers</span>
+            <span style="background:rgba(52,211,153,0.1);color:#6ee7b7;font-size:0.76rem;
+                         font-weight:600;padding:0.28rem 0.75rem;border-radius:20px;
+                         border:1px solid rgba(52,211,153,0.2);">KMeans ML</span>
+            <span style="background:rgba(52,211,153,0.1);color:#6ee7b7;font-size:0.76rem;
+                         font-weight:600;padding:0.28rem 0.75rem;border-radius:20px;
+                         border:1px solid rgba(52,211,153,0.2);">Llama 3 via Groq</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
 version = ah.data_version()
@@ -32,29 +73,141 @@ with col_izq:
     st.subheader("¿Cómo usar el sistema?")
     st.markdown(
         """
-        1. **Ingesta de Documentos** — Sube tus propios PDFs. El pipeline
-           limpia el texto, lo divide en fragmentos y los indexa con embeddings.
-           También puedes eliminar documentos ya indexados.
-        2. **Chatbot RAG** — Crea chats independientes, cada uno con su propio
-           contexto de documentos. Haz preguntas en lenguaje natural.
-        3. **Búsqueda Semántica** — Busca por significado (no por palabras
-           exactas) dentro de todos los documentos.
-        4. **Dashboard** — Estadísticas de los documentos y **clustering
-           (KMeans)** que los agrupa por temática.
-        """
+        <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">
+
+          <div style="display:flex;gap:1rem;align-items:flex-start;
+                      background:rgba(56,189,248,0.05);
+                      border:1px solid rgba(56,189,248,0.15);
+                      border-radius:12px;padding:1rem 1.15rem;">
+            <div style="background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;
+                        font-weight:800;font-size:0.9rem;min-width:2rem;height:2rem;
+                        border-radius:7px;display:flex;align-items:center;justify-content:center;
+                        flex-shrink:0;box-shadow:0 4px 12px rgba(14,165,233,0.35);">1</div>
+            <div>
+              <div style="color:#7dd3fc;font-weight:700;font-size:0.94rem;margin-bottom:0.18rem;">
+                Ingesta de Documentos
+              </div>
+              <div style="color:#94a3b8;font-size:0.85rem;line-height:1.5;">
+                Sube tus PDFs. El pipeline limpia el texto, lo divide en fragmentos
+                y los indexa con embeddings. También puedes eliminar documentos ya indexados.
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:1rem;align-items:flex-start;
+                      background:rgba(56,189,248,0.05);
+                      border:1px solid rgba(56,189,248,0.15);
+                      border-radius:12px;padding:1rem 1.15rem;">
+            <div style="background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;
+                        font-weight:800;font-size:0.9rem;min-width:2rem;height:2rem;
+                        border-radius:7px;display:flex;align-items:center;justify-content:center;
+                        flex-shrink:0;box-shadow:0 4px 12px rgba(14,165,233,0.35);">2</div>
+            <div>
+              <div style="color:#7dd3fc;font-weight:700;font-size:0.94rem;margin-bottom:0.18rem;">
+                Chatbot RAG
+              </div>
+              <div style="color:#94a3b8;font-size:0.85rem;line-height:1.5;">
+                Crea chats independientes, cada uno con su propio contexto de documentos.
+                Haz preguntas en lenguaje natural.
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:1rem;align-items:flex-start;
+                      background:rgba(56,189,248,0.05);
+                      border:1px solid rgba(56,189,248,0.15);
+                      border-radius:12px;padding:1rem 1.15rem;">
+            <div style="background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;
+                        font-weight:800;font-size:0.9rem;min-width:2rem;height:2rem;
+                        border-radius:7px;display:flex;align-items:center;justify-content:center;
+                        flex-shrink:0;box-shadow:0 4px 12px rgba(14,165,233,0.35);">3</div>
+            <div>
+              <div style="color:#7dd3fc;font-weight:700;font-size:0.94rem;margin-bottom:0.18rem;">
+                Búsqueda Semántica
+              </div>
+              <div style="color:#94a3b8;font-size:0.85rem;line-height:1.5;">
+                Busca por significado (no por palabras exactas) dentro de todos los documentos.
+                Usa embeddings y distancia coseno.
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:1rem;align-items:flex-start;
+                      background:rgba(56,189,248,0.05);
+                      border:1px solid rgba(56,189,248,0.15);
+                      border-radius:12px;padding:1rem 1.15rem;">
+            <div style="background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;
+                        font-weight:800;font-size:0.9rem;min-width:2rem;height:2rem;
+                        border-radius:7px;display:flex;align-items:center;justify-content:center;
+                        flex-shrink:0;box-shadow:0 4px 12px rgba(14,165,233,0.35);">4</div>
+            <div>
+              <div style="color:#7dd3fc;font-weight:700;font-size:0.94rem;margin-bottom:0.18rem;">
+                Dashboard
+              </div>
+              <div style="color:#94a3b8;font-size:0.85rem;line-height:1.5;">
+                Estadísticas de los documentos y <strong style="color:#22d3ee;">clustering KMeans</strong>
+                que los agrupa por temática con visualización PCA 2D.
+              </div>
+            </div>
+          </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
 with col_der:
     st.subheader("Arquitectura")
     st.markdown(
         """
-        - **Pipeline de datos:** ingesta de PDFs subidos por el usuario
-        - **Preprocesamiento:** limpieza + *chunking* con solapamiento
-        - **Indexación:** ChromaDB + embeddings *all-MiniLM-L6-v2*
-        - **ML:** clustering KMeans (silueta + TF-IDF + PCA)
-        - **RAG:** búsqueda semántica + LLM open source (Llama 3)
-        - **Dashboard:** Streamlit + Plotly
-        """
+        <div style="
+            background: rgba(34,211,238,0.04);
+            border: 1px solid rgba(34,211,238,0.15);
+            border-radius: 14px;
+            padding: 1.25rem 1.35rem;
+            margin-top: 0.75rem;
+        ">
+          <div style="display:flex;flex-direction:column;gap:0.65rem;">
+            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
+              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
+              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
+                <strong style="color:#22d3ee;">Pipeline:</strong> ingesta de PDFs subidos por el usuario
+              </span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
+              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
+              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
+                <strong style="color:#22d3ee;">Preprocesamiento:</strong> limpieza + <em>chunking</em> con solapamiento
+              </span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
+              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
+              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
+                <strong style="color:#22d3ee;">Indexación:</strong> ChromaDB + embeddings <em>all-MiniLM-L6-v2</em>
+              </span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
+              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
+              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
+                <strong style="color:#22d3ee;">ML:</strong> clustering KMeans (silueta + TF-IDF + PCA)
+              </span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
+              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
+              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
+                <strong style="color:#22d3ee;">RAG:</strong> búsqueda semántica + LLM open source (Llama 3)
+              </span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
+              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
+              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
+                <strong style="color:#22d3ee;">Dashboard:</strong> Streamlit + Plotly
+              </span>
+            </div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
     if config.LLM_PROVIDER == "groq" and not config.GROQ_API_KEY:
         st.info(
