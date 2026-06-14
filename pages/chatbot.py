@@ -19,38 +19,46 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
             const win    = window.parent;
             const AUTO   = {'true' if auto_scroll else 'false'};
             const BTN_ID = 'rag-scroll-btn';
-            const ANCHOR = 'rag-chat-bottom';
+
+            // ── Funciones de scroll ───────────────────────────────────────
+            function findScroller() {{
+                // Busca el primer elemento que realmente está scrolleando
+                const candidates = [
+                    doc.querySelector('[data-testid="stAppScrollToBottomContainer"]'),
+                    doc.querySelector('[data-testid="stMain"]'),
+                    doc.querySelector('section.main'),
+                    doc.documentElement,
+                    doc.body,
+                ];
+                for (const el of candidates) {{
+                    if (el && el.scrollHeight > el.clientHeight + 10) return el;
+                }}
+                return doc.documentElement;
+            }}
 
             function scrollToBottom() {{
-                // Intentar con el último mensaje de chat renderizado por Streamlit
+                const scroller = findScroller();
+                scroller.scrollTo({{ top: scroller.scrollHeight, behavior: 'smooth' }});
+            }}
+
+            function scrollToUserMsg() {{
                 const msgs = doc.querySelectorAll('[data-testid="stChatMessage"]');
-                if (msgs.length) {{
-                    msgs[msgs.length - 1].scrollIntoView({{ behavior: 'smooth', block: 'end' }});
+                if (msgs.length >= 2) {{
+                    msgs[msgs.length - 2].scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+                    return true;
+                }} else if (msgs.length === 1) {{
+                    msgs[0].scrollIntoView({{ behavior: 'smooth', block: 'start' }});
                     return true;
                 }}
                 return false;
             }}
 
-            // ── Auto-scroll: reintentos hasta encontrar el último mensaje ─
             if (AUTO) {{
                 let tries = 0;
                 function tryScroll() {{
-                    if (!scrollToBottom() && tries++ < 6) setTimeout(tryScroll, 150);
+                    if (!scrollToUserMsg() && tries++ < 8) setTimeout(tryScroll, 150);
                 }}
                 tryScroll();
-            }}
-
-            // ── Detectar el scroller para el botón ───────────────────────
-            function getScroller() {{
-                for (const sel of [
-                    '[data-testid="stAppScrollToBottomContainer"]',
-                    '[data-testid="stMain"]',
-                    'section.main',
-                ]) {{
-                    const el = doc.querySelector(sel);
-                    if (el && el.scrollHeight > el.clientHeight + 4) return el;
-                }}
-                return doc.documentElement;
             }}
 
             // ── Botón flotante ────────────────────────────────────────────
@@ -59,12 +67,10 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
                 btn = doc.createElement('button');
                 btn.id = BTN_ID;
                 btn.title = 'Ir al mensaje más reciente';
-                btn.innerHTML = `
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2.5"
-                         stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"/>
-                    </svg>`;
+                btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/></svg>`;
                 btn.style.cssText = `
                     position: fixed;
                     bottom: 115px;
@@ -74,7 +80,7 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
                     background: rgba(35,35,35,0.92);
                     color: rgba(255,255,255,0.9);
                     cursor: pointer;
-                    z-index: 9998;
+                    z-index: 9999;
                     display: none;
                     align-items: center;
                     justify-content: center;
@@ -85,14 +91,44 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
 
                 // Centrar en el área de contenido (excluyendo sidebar)
                 function positionBtn() {{
-                    const main = doc.querySelector('[data-testid="stAppScrollToBottomContainer"]');
-                    if (main) {{
-                        const rect = main.getBoundingClientRect();
-                        btn.style.left = (rect.left + rect.width / 2 - 18) + 'px';
+                    // Busca el contenedor principal del contenido
+                    const candidates = [
+                        '[data-testid="stMainBlockContainer"]',
+                        '[data-testid="block-container"]',
+                        '[data-testid="stMain"]',
+                        'section.main',
+                        '.main',
+                    ];
+                    for (const sel of candidates) {{
+                        const el = doc.querySelector(sel);
+                        if (el) {{
+                            const r = el.getBoundingClientRect();
+                            if (r.width > 100) {{
+                                btn.style.left = (r.left + r.width / 2 - 18) + 'px';
+                                return;
+                            }}
+                        }}
                     }}
+                    // Fallback: centrar en viewport considerando sidebar
+                    const sidebar = doc.querySelector('[data-testid="stSidebar"]');
+                    const sideW = sidebar ? sidebar.getBoundingClientRect().width : 0;
+                    btn.style.left = (sideW + (win.innerWidth - sideW) / 2 - 18) + 'px';
                 }}
-                positionBtn();
+
+                let pt = 0;
+                function tryPos() {{
+                    positionBtn();
+                    if (pt++ < 8) setTimeout(tryPos, 300);
+                }}
+                tryPos();
                 win.addEventListener('resize', positionBtn);
+
+                const sidebarEl = doc.querySelector('[data-testid="stSidebar"]');
+                if (sidebarEl) {{
+                    new MutationObserver(positionBtn).observe(sidebarEl, {{
+                        attributes: true, childList: false, subtree: false
+                    }});
+                }}
 
                 btn.onmouseenter = () => {{
                     btn.style.transform = 'scale(1.12)';
@@ -102,22 +138,33 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
                     btn.style.transform = 'scale(1)';
                     btn.style.background = 'rgba(35,35,35,0.92)';
                 }};
-                btn.onclick = () => scrollToBottom();
+                btn.onclick = scrollToBottom;
                 doc.body.appendChild(btn);
             }}
 
-            // ── Mostrar/ocultar según posición de scroll ──────────────────
+            // ── Mostrar/ocultar: detecta si el último mensaje es visible ──
             function updateBtn() {{
-                const el   = getScroller();
-                const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
-                btn.style.display = dist > 160 ? 'flex' : 'none';
+                const msgs = doc.querySelectorAll('[data-testid="stChatMessage"]');
+                if (!msgs.length) {{ btn.style.display = 'none'; return; }}
+                const last = msgs[msgs.length - 1];
+                const r = last.getBoundingClientRect();
+                // Ocultar solo si el último mensaje ya está completamente en pantalla
+                const fullyVisible = r.top >= 0 && r.bottom <= win.innerHeight;
+                btn.style.display = fullyVisible ? 'none' : 'flex';
             }}
 
-            const el = getScroller();
-            if (el._ragScrollHandler) el.removeEventListener('scroll', el._ragScrollHandler);
-            el._ragScrollHandler = updateBtn;
-            el.addEventListener('scroll', updateBtn);
-            win.addEventListener('scroll', updateBtn);
+            // Escuchar scroll en todos los contenedores posibles de Streamlit
+            const scrollTargets = [
+                doc.documentElement,
+                doc.querySelector('[data-testid="stAppScrollToBottomContainer"]'),
+                doc.querySelector('[data-testid="stMain"]'),
+                doc.querySelector('section.main'),
+            ];
+            scrollTargets.forEach(el => {{
+                if (el) el.addEventListener('scroll', updateBtn, {{ passive: true }});
+            }});
+            win.addEventListener('scroll', updateBtn, {{ passive: true }});
+            setInterval(updateBtn, 400);
             updateBtn();
         }})();
         </script>

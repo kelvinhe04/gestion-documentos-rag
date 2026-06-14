@@ -59,7 +59,9 @@ CHUNK_OVERLAP: int = _get_int("CHUNK_OVERLAP", 150)  # solapamiento entre fragme
 # ----------------------------------------------------------------------
 # Recuperación (retrieval)
 # ----------------------------------------------------------------------
-TOP_K: int = _get_int("TOP_K", 5)  # nº de fragmentos a recuperar por consulta
+TOP_K: int = _get_int("TOP_K", 5)          # nº de fragmentos a recuperar por consulta
+MAX_CHUNKS_PER_DOC: int = _get_int("MAX_CHUNKS_PER_DOC", 2)  # máx chunks de un mismo doc en el ranking
+MIN_SCORE: float = _get_float("MIN_SCORE", 0.10)              # score mínimo para incluir un fragmento
 
 # ----------------------------------------------------------------------
 # LLM (chatbot RAG)

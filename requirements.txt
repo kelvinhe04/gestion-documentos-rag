@@ -11,6 +11,7 @@ groq>=0.13.0              # Proveedor por defecto (modelos open source: Llama 3)
 requests>=2.32.0          # Cliente HTTP (proveedor alternativo Ollama)
 
 # ===== Machine Learning =====
+rank-bm25>=0.2.2          # Búsqueda BM25 para modo híbrido (keyword + semántico)
 scikit-learn>=1.5.0       # KMeans (clustering), PCA, TF-IDF, silhouette
 pandas>=2.2.0
 numpy>=1.26.0
