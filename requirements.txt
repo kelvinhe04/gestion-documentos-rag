@@ -1,6 +1,7 @@
 # ===== Núcleo del sistema RAG =====
 streamlit>=1.49.0          # Dashboard interactivo
-chromadb>=0.5.5            # Base de datos vectorial (indexación con embeddings)
+chromadb>=0.5.5,<0.6.0     # Base de datos vectorial (indexación con embeddings)
+protobuf>=3.20.0,<4.0.0    # Fijar versión compatible con chromadb/opentelemetry
 onnxruntime>=1.18.0        # Backend ONNX para embeddings
 fastembed>=0.4.0           # Embeddings multilingües vía ONNX (sin PyTorch)
 pypdf>=5.1.0              # Carga y procesamiento de PDFs
