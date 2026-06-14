@@ -206,6 +206,20 @@ st.markdown(
 ah.sidebar_status()
 
 
+@st.dialog("Limpiar conversación")
+def _dialog_limpiar_chat(session_id: str) -> None:
+    st.markdown("¿Seguro que quieres limpiar el historial de este chat?")
+    st.caption("Se borrarán todos los mensajes. Esta acción no se puede deshacer.")
+    st.write("")
+    ca, cb = st.columns(2)
+    if ca.button("Limpiar", type="primary", use_container_width=True):
+        chat_sessions.clear_messages(session_id)
+        st.session_state.pop("_loaded_session", None)
+        st.rerun()
+    if cb.button("Cancelar", use_container_width=True):
+        st.rerun()
+
+
 @st.dialog("Eliminar chat")
 def _dialog_eliminar_chat(session_id: str, session_name: str) -> None:
     st.markdown(
@@ -336,9 +350,7 @@ with st.sidebar:
     if session_data.get("messages") and st.button(
         "Limpiar conversación", use_container_width=True
     ):
-        chat_sessions.clear_messages(sid)
-        st.session_state.pop("_loaded_session", None)
-        st.rerun()
+        _dialog_limpiar_chat(sid)
 
 # ── Modal de confirmación de eliminación ────────────────────────────────────
 if "_del_chat" in st.session_state:
