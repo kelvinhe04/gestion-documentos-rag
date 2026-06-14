@@ -428,10 +428,10 @@ if pregunta := st.chat_input("Escribe tu pregunta..."):
 
     with st.chat_message("assistant", avatar=":material/smart_toy:"):
         with st.spinner("Buscando en los documentos y generando respuesta..."):
-            # Últimos 6 mensajes (3 turnos) como contexto conversacional
+            # Últimos 6 mensajes ANTES de la pregunta actual (3 turnos previos)
             historial = [
                 {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.get("mensajes", [])[-6:]
+                for m in st.session_state.get("mensajes", [])[:-1][-6:]
             ]
             resultado = rag_pipeline.answer(
                 pregunta,
