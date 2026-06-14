@@ -49,43 +49,27 @@ c4.metric("Fragmentos/doc (prom.)", prom)
 
 st.divider()
 
-# ── Distribución por fuente y por documento ────────────────────────────────
-col_a, col_b = st.columns(2)
+# ── Distribución por documento ─────────────────────────────────────────────
+df_docs = pd.DataFrame(stats["documents"])
 
-with col_a:
-    st.subheader("Documentos por fuente")
-    if stats["by_source"]:
-        df_src = pd.DataFrame(
-            {"Fuente": list(stats["by_source"].keys()), "Documentos": list(stats["by_source"].values())}
-        )
-        fig = px.pie(
-            df_src, names="Fuente", values="Documentos", hole=0.45,
-            color_discrete_sequence=_PALETTE,
-        )
-        fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=320, **_LAYOUT)
-        fig.update_traces(textfont_color="#fff")
-        st.plotly_chart(fig, width="stretch")
-
-with col_b:
-    st.subheader("Fragmentos por documento")
-    df_docs = pd.DataFrame(stats["documents"])
-    df_top = df_docs.sort_values("chunks", ascending=False).head(12)
-    fig2 = px.bar(
-        df_top, x="chunks", y="title", orientation="h",
-        labels={"chunks": "Fragmentos", "title": ""},
-        color="source", color_discrete_sequence=_PALETTE,
-    )
-    fig2.update_layout(
-        margin=dict(t=10, b=10, l=10, r=10), height=320,
-        yaxis=dict(autorange="reversed"), **_LAYOUT,
-    )
-    st.plotly_chart(fig2, width="stretch")
+st.subheader("Fragmentos por documento")
+df_top = df_docs.sort_values("chunks", ascending=False).head(12)
+fig2 = px.bar(
+    df_top, x="chunks", y="title", orientation="h",
+    labels={"chunks": "Fragmentos", "title": ""},
+    color_discrete_sequence=_PALETTE,
+)
+fig2.update_layout(
+    margin=dict(t=10, b=10, l=10, r=10), height=320,
+    yaxis=dict(autorange="reversed"), **_LAYOUT,
+)
+st.plotly_chart(fig2, width="stretch")
 
 # ── Tabla de documentos ────────────────────────────────────────────────────
 st.subheader("Documentos indexados")
-tabla = df_docs[["title", "source", "num_pages", "chunks", "author"]].rename(
+tabla = df_docs[["title", "num_pages", "chunks", "author"]].rename(
     columns={
-        "title": "Título", "source": "Fuente", "num_pages": "Páginas",
+        "title": "Título", "num_pages": "Páginas",
         "chunks": "Fragmentos", "author": "Autor",
     }
 )
@@ -159,10 +143,10 @@ with col_v2:
 
 st.subheader("Documentos por cluster")
 st.dataframe(
-    df_clusters[["title", "tema", "cluster", "source", "n_chunks"]].rename(
+    df_clusters[["title", "tema", "cluster", "n_chunks"]].rename(
         columns={
-            "title": "Documento", "tema": "Tema (TF-IDF)", "cluster": "Cluster",
-            "source": "Fuente", "n_chunks": "Fragmentos",
+            "title": "Documento", "tema": "Tema (TF-IDF)",
+            "cluster": "Cluster", "n_chunks": "Fragmentos",
         }
     ),
     width="stretch",
