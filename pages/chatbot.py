@@ -310,11 +310,16 @@ with st.sidebar:
         doc_map = {d["doc_id"]: d["title"] for d in docs}
         saved_docs = [d for d in session_data.get("doc_ids", []) if d in doc_map]
 
+        # Inicializar el estado del widget solo la primera vez por sesión
+        docs_key = f"_docs_{sid}"
+        if docs_key not in st.session_state:
+            st.session_state[docs_key] = saved_docs
+
         new_selection = st.multiselect(
             "Filtrar documentos",
             options=list(doc_map.keys()),
-            default=saved_docs,
             format_func=lambda x: doc_map.get(x, x),
+            key=docs_key,
             help="Selecciona los documentos que usará este chat.",
             label_visibility="collapsed",
         )
