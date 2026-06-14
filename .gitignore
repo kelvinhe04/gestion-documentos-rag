@@ -24,6 +24,7 @@ data/processed/*
 # Documentación generada
 docs/*.docx
 ~$*
+Parcial 2.pdf
 
 # Modelos descargados / caché
 .cache/
