@@ -411,10 +411,16 @@ if pregunta := st.chat_input("Escribe tu pregunta..."):
 
     with st.chat_message("assistant", avatar=":material/smart_toy:"):
         with st.spinner("Buscando en los documentos y generando respuesta..."):
+            # Últimos 6 mensajes (3 turnos) como contexto conversacional
+            historial = [
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.get("mensajes", [])[-6:]
+            ]
             resultado = rag_pipeline.answer(
                 pregunta,
                 k=top_k,
                 doc_ids=active_docs,
+                history=historial,
             )
         st.markdown(resultado["answer"])
         st.caption(f"Generado con: **{resultado.get('provider', '?')}**")

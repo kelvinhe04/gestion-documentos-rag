@@ -159,7 +159,7 @@ def cluster_documents(
     sil = float(silhouette_score(X, labels)) if k > 1 and len(set(labels)) > 1 else 0.0
 
     # Proyección 2D para graficar.
-    if X.shape[1] > 2 and n_docs > 2:
+    if X.shape[1] > 2 and n_docs >= 2:
         coords = PCA(n_components=2, random_state=42).fit_transform(X)
     else:
         coords = np.zeros((n_docs, 2))

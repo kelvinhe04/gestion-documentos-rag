@@ -156,11 +156,11 @@ with col_izq:
     )
 
 if config.LLM_PROVIDER == "groq" and not config.GROQ_API_KEY:
-        st.info(
-            "No hay `GROQ_API_KEY` configurada: el chatbot funcionará en "
-            "**modo extractivo**. Añádela en `.env` para respuestas generativas.",
-            icon=":material/info:",
-        )
+    st.info(
+        "No hay `GROQ_API_KEY` configurada: el chatbot funcionará en "
+        "**modo extractivo**. Añádela en `.env` para respuestas generativas.",
+        icon=":material/info:",
+    )
 
 if stats["n_documents"] == 0:
     st.warning(

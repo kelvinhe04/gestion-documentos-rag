@@ -55,6 +55,7 @@ def answer(
     question: str,
     k: int | None = None,
     doc_ids: List[str] | None = None,
+    history: List[Dict[str, Any]] | None = None,
 ) -> Dict[str, Any]:
     """Responde una pregunta usando RAG.
 
@@ -63,6 +64,8 @@ def answer(
         sources  -> fragmentos recuperados (con título y score)
         provider -> proveedor de LLM usado ("groq" / "ollama" / "extractivo")
 
+    history: turnos previos [{"role": "user"|"assistant", "content": str}]
+             para dar contexto conversacional multi-turno al LLM.
     Si se pasa ``doc_ids``, la búsqueda se restringe a esos documentos.
     """
     k = k or config.TOP_K
@@ -82,7 +85,7 @@ def answer(
     context = _build_context(hits)
     prompt = PROMPT_TEMPLATE.format(context=context, question=question)
 
-    generated = llm.generate(prompt, system=SYSTEM_PROMPT)
+    generated = llm.generate(prompt, system=SYSTEM_PROMPT, history=history or [])
 
     if generated and generated.strip():
         return {"answer": generated.strip(), "sources": hits, "provider": config.LLM_PROVIDER}

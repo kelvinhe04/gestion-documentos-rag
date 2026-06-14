@@ -20,18 +20,26 @@ import requests
 from src import config
 
 
-def generate(prompt: str, system: str = "") -> Optional[str]:
-    """Genera texto con el proveedor configurado. Devuelve None si no hay LLM."""
+def generate(
+    prompt: str,
+    system: str = "",
+    history: Optional[list] = None,
+) -> Optional[str]:
+    """Genera texto con el proveedor configurado. Devuelve None si no hay LLM.
+
+    history: lista de {"role": "user"|"assistant", "content": str} con turnos previos.
+    """
     provider = config.LLM_PROVIDER
+    history = history or []
 
     if provider == "groq" and config.GROQ_API_KEY:
-        return _generate_groq(prompt, system)
+        return _generate_groq(prompt, system, history)
     if provider == "ollama":
-        return _generate_ollama(prompt, system)
+        return _generate_ollama(prompt, system, history)
     return None
 
 
-def _generate_groq(prompt: str, system: str) -> Optional[str]:
+def _generate_groq(prompt: str, system: str, history: list) -> Optional[str]:
     """Genera con la API de Groq (modelos Llama 3 open source)."""
     try:
         from groq import Groq
@@ -41,12 +49,12 @@ def _generate_groq(prompt: str, system: str) -> Optional[str]:
 
     try:
         client = Groq(api_key=config.GROQ_API_KEY)
+        messages = [{"role": "system", "content": system}]
+        messages.extend(history)
+        messages.append({"role": "user", "content": prompt})
         response = client.chat.completions.create(
             model=config.GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": prompt},
-            ],
+            messages=messages,
             temperature=config.LLM_TEMPERATURE,
             max_tokens=1024,
         )
@@ -56,17 +64,17 @@ def _generate_groq(prompt: str, system: str) -> Optional[str]:
         return None
 
 
-def _generate_ollama(prompt: str, system: str) -> Optional[str]:
+def _generate_ollama(prompt: str, system: str, history: list) -> Optional[str]:
     """Genera con un modelo local servido por Ollama."""
     try:
+        messages = [{"role": "system", "content": system}]
+        messages.extend(history)
+        messages.append({"role": "user", "content": prompt})
         response = requests.post(
             f"{config.OLLAMA_HOST}/api/chat",
             json={
                 "model": config.OLLAMA_MODEL,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": prompt},
-                ],
+                "messages": messages,
                 "stream": False,
                 "options": {"temperature": config.LLM_TEMPERATURE},
             },
