@@ -245,6 +245,17 @@ st.markdown(
         padding-top: 16px !important;
         padding-bottom: 16px !important;
     }
+
+    /* ── Chat input: cursor de tamaño normal ─────────────────────────────── */
+    [data-testid="stChatInput"] textarea {
+        font-size: 1rem !important;
+        line-height: 1.5rem !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        min-height: 2.5rem !important;
+        caret-color: white !important;
+        box-sizing: border-box !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
