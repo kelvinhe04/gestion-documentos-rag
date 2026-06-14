@@ -108,8 +108,8 @@ Copy-Item .env.example .env
 
 | Modelo | Parámetros | Velocidad | Mejor para | Estado |
 |---|---|---|---|---|
-| Llama 3.3 70B Versatile | 70B | ⚡⚡ Rápido | Calidad alta, respuestas precisas | ✅ **Actual en este proyecto** |
-| Llama 3.1 8B Instant | 8B | ⚡⚡⚡ Ultra rápido | Respuestas rápidas, tareas sencillas | ✅ Gratis |
+| Llama 3.3 70B Versatile | 70B | ⚡⚡ Rápido | Calidad alta, respuestas precisas | ✅ Gratis |
+| Llama 3.1 8B Instant | 8B | ⚡⚡⚡ Ultra rápido | Respuestas rápidas, tareas sencillas | ✅ **Actual en este proyecto** |
 | Llama 3.1 70B Versatile | 70B | ⚡⚡ Rápido | Mejor calidad, más inteligente | ✅ Gratis |
 | Llama 3.2 90B Vision | 90B | ⚡ Un poco lento | Análisis de imágenes + texto | ✅ Gratis |
 | Mixtral 8x7B | Mezcla | ⚡⚡ Rápido | Tareas variadas | ✅ Gratis |
