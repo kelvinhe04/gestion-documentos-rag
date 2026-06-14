@@ -32,7 +32,6 @@ st.markdown(
             line-height: 1.15;
         ">Sistema de Gestión de Documentos Académicos</div>
         <p style="color: rgba(226,232,240,0.75); margin: 0; font-size: 0.97rem; line-height: 1.65; font-weight: 400;">
-            <strong style="color: #7dd3fc;">Grupo 7 — Proyecto Integrador.</strong>
             Carga documentos académicos (PDFs), indéxalos con embeddings en
             <strong style="color: #34d399;">ChromaDB</strong> y haz preguntas sobre su contenido
             mediante <strong style="color: #34d399;">RAG</strong> (Retrieval-Augmented Generation).
@@ -67,7 +66,7 @@ c4.metric("Fuentes", len(stats["by_source"]) if stats["by_source"] else 0)
 
 st.divider()
 
-col_izq, col_der = st.columns([1.3, 1])
+col_izq = st.container()
 
 with col_izq:
     st.subheader("¿Cómo usar el sistema?")
@@ -156,60 +155,7 @@ with col_izq:
         unsafe_allow_html=True,
     )
 
-with col_der:
-    st.subheader("Arquitectura")
-    st.markdown(
-        """
-        <div style="
-            background: rgba(34,211,238,0.04);
-            border: 1px solid rgba(34,211,238,0.15);
-            border-radius: 14px;
-            padding: 1.25rem 1.35rem;
-            margin-top: 0.75rem;
-        ">
-          <div style="display:flex;flex-direction:column;gap:0.65rem;">
-            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
-              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
-              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
-                <strong style="color:#22d3ee;">Pipeline:</strong> ingesta de PDFs subidos por el usuario
-              </span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
-              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
-              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
-                <strong style="color:#22d3ee;">Preprocesamiento:</strong> limpieza + <em>chunking</em> con solapamiento
-              </span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
-              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
-              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
-                <strong style="color:#22d3ee;">Indexación:</strong> ChromaDB + embeddings <em>all-MiniLM-L6-v2</em>
-              </span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
-              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
-              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
-                <strong style="color:#22d3ee;">ML:</strong> clustering KMeans (silueta + TF-IDF + PCA)
-              </span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
-              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
-              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
-                <strong style="color:#22d3ee;">RAG:</strong> búsqueda semántica + LLM open source (Llama 3)
-              </span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:0.65rem;">
-              <span style="color:#22d3ee;font-size:0.55rem;margin-top:0.45rem;flex-shrink:0;">&#9679;</span>
-              <span style="font-size:0.86rem;color:#94a3b8;line-height:1.45;">
-                <strong style="color:#22d3ee;">Dashboard:</strong> Streamlit + Plotly
-              </span>
-            </div>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    if config.LLM_PROVIDER == "groq" and not config.GROQ_API_KEY:
+if config.LLM_PROVIDER == "groq" and not config.GROQ_API_KEY:
         st.info(
             "No hay `GROQ_API_KEY` configurada: el chatbot funcionará en "
             "**modo extractivo**. Añádela en `.env` para respuestas generativas.",

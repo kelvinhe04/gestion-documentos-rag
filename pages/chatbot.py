@@ -15,23 +15,42 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
         f"""
         <script>
         (function() {{
-            const doc   = window.parent.document;
-            const AUTO  = {'true' if auto_scroll else 'false'};
+            const doc    = window.parent.document;
+            const win    = window.parent;
+            const AUTO   = {'true' if auto_scroll else 'false'};
             const BTN_ID = 'rag-scroll-btn';
+            const ANCHOR = 'rag-chat-bottom';
 
-            // ── Detectar contenedor de scroll ────────────────────────────
-            function getMain() {{
-                return doc.querySelector('[data-testid="stMain"]')
-                    || doc.querySelector('.main')
-                    || doc.documentElement;
+            function scrollToBottom() {{
+                // Intentar con el último mensaje de chat renderizado por Streamlit
+                const msgs = doc.querySelectorAll('[data-testid="stChatMessage"]');
+                if (msgs.length) {{
+                    msgs[msgs.length - 1].scrollIntoView({{ behavior: 'smooth', block: 'end' }});
+                    return true;
+                }}
+                return false;
             }}
 
-            // ── Auto-scroll con delay para esperar render ─────────────────
+            // ── Auto-scroll: reintentos hasta encontrar el último mensaje ─
             if (AUTO) {{
-                setTimeout(() => {{
-                    const m = getMain();
-                    if (m) m.scrollTo({{ top: m.scrollHeight, behavior: 'smooth' }});
-                }}, 120);
+                let tries = 0;
+                function tryScroll() {{
+                    if (!scrollToBottom() && tries++ < 6) setTimeout(tryScroll, 150);
+                }}
+                tryScroll();
+            }}
+
+            // ── Detectar el scroller para el botón ───────────────────────
+            function getScroller() {{
+                for (const sel of [
+                    '[data-testid="stAppScrollToBottomContainer"]',
+                    '[data-testid="stMain"]',
+                    'section.main',
+                ]) {{
+                    const el = doc.querySelector(sel);
+                    if (el && el.scrollHeight > el.clientHeight + 4) return el;
+                }}
+                return doc.documentElement;
             }}
 
             // ── Botón flotante ────────────────────────────────────────────
@@ -48,9 +67,7 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
                     </svg>`;
                 btn.style.cssText = `
                     position: fixed;
-                    bottom: 76px;
-                    left: 50%;
-                    transform: translateX(-50%) scale(1);
+                    bottom: 115px;
                     width: 36px; height: 36px;
                     border-radius: 50%;
                     border: 1px solid rgba(255,255,255,0.18);
@@ -65,40 +82,43 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
                     backdrop-filter: blur(8px);
                     transition: transform 0.15s ease, background 0.15s ease;
                 `;
+
+                // Centrar en el área de contenido (excluyendo sidebar)
+                function positionBtn() {{
+                    const main = doc.querySelector('[data-testid="stAppScrollToBottomContainer"]');
+                    if (main) {{
+                        const rect = main.getBoundingClientRect();
+                        btn.style.left = (rect.left + rect.width / 2 - 18) + 'px';
+                    }}
+                }}
+                positionBtn();
+                win.addEventListener('resize', positionBtn);
+
                 btn.onmouseenter = () => {{
-                    btn.style.transform = 'translateX(-50%) scale(1.12)';
+                    btn.style.transform = 'scale(1.12)';
                     btn.style.background = 'rgba(60,60,60,0.95)';
                 }};
                 btn.onmouseleave = () => {{
-                    btn.style.transform = 'translateX(-50%) scale(1)';
+                    btn.style.transform = 'scale(1)';
                     btn.style.background = 'rgba(35,35,35,0.92)';
                 }};
-                btn.onclick = () => {{
-                    const m = getMain();
-                    if (m) m.scrollTo({{ top: m.scrollHeight, behavior: 'smooth' }});
-                }};
+                btn.onclick = () => scrollToBottom();
                 doc.body.appendChild(btn);
             }}
 
             // ── Mostrar/ocultar según posición de scroll ──────────────────
             function updateBtn() {{
-                const m = getMain();
-                if (!m) return;
-                const dist = m.scrollHeight - m.scrollTop - m.clientHeight;
-                if (dist > 160) {{
-                    btn.style.display = 'flex';
-                }} else {{
-                    btn.style.display = 'none';
-                }}
+                const el   = getScroller();
+                const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+                btn.style.display = dist > 160 ? 'flex' : 'none';
             }}
 
-            const m = getMain();
-            if (m) {{
-                if (m._ragScrollHandler) m.removeEventListener('scroll', m._ragScrollHandler);
-                m._ragScrollHandler = updateBtn;
-                m.addEventListener('scroll', updateBtn);
-                updateBtn();
-            }}
+            const el = getScroller();
+            if (el._ragScrollHandler) el.removeEventListener('scroll', el._ragScrollHandler);
+            el._ragScrollHandler = updateBtn;
+            el.addEventListener('scroll', updateBtn);
+            win.addEventListener('scroll', updateBtn);
+            updateBtn();
         }})();
         </script>
         """,
@@ -108,27 +128,76 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
 st.markdown(
     """
     <style>
-    /* ── Burbujas de chat ─────────────────────────────────────────────────── */
+    /* ── Base: resetear burbujas ─────────────────────────────────────────── */
     [data-testid="stChatMessage"] {
-        border: 1px solid rgba(56,189,248,0.1);
-        border-radius: 14px !important;
-        padding: 0.85rem 1rem !important;
-        margin-bottom: 0.35rem;
-        background: rgba(22,27,39,0.6);
+        padding: 0.75rem 1rem !important;
+        margin-bottom: 0.6rem !important;
+        width: fit-content !important;
+        max-width: 80% !important;
+        min-width: 0 !important;
         backdrop-filter: blur(6px);
-        transition: border-color 0.2s ease;
+        transition: box-shadow 0.2s ease;
     }
-    [data-testid="stChatMessage"]:hover {
-        border-color: rgba(56,189,248,0.22);
+
+    /* ── Mensaje del USUARIO → derecha, azul ────────────────────────────── */
+    [data-testid="stChatMessage"]:has(
+        [data-testid="stChatMessageContent"][aria-label="Chat message from user"]
+    ) {
+        flex-direction: row-reverse !important;
+        margin-left: auto !important;
+        margin-right: 0 !important;
+        background: linear-gradient(135deg,
+            rgba(14,165,233,0.22) 0%,
+            rgba(56,189,248,0.14) 100%) !important;
+        border: 1px solid rgba(56,189,248,0.35) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 2px 12px rgba(14,165,233,0.15);
     }
-    /* Avatar icon color → electric blue */
-    [data-testid="stChatMessage"] [data-testid="stChatMessageAvatarUser"],
-    [data-testid="stChatMessage"] [data-testid="stChatMessageAvatarAssistant"] {
-        background: rgba(14,165,233,0.12) !important;
-        border: 1px solid rgba(56,189,248,0.25) !important;
+    [data-testid="stChatMessage"]:has(
+        [data-testid="stChatMessageContent"][aria-label="Chat message from user"]
+    ):hover {
+        box-shadow: 0 4px 20px rgba(14,165,233,0.28);
+    }
+    [data-testid="stChatMessage"]:has(
+        [data-testid="stChatMessageContent"][aria-label="Chat message from user"]
+    ) [data-testid="stChatMessageAvatarCustom"] {
+        background: rgba(14,165,233,0.2) !important;
+        border: 1px solid rgba(56,189,248,0.45) !important;
         border-radius: 9px !important;
     }
 
+    /* ── Mensaje del BOT → izquierda, verde-oscuro ───────────────────────── */
+    [data-testid="stChatMessage"]:has(
+        [data-testid="stChatMessageContent"][aria-label="Chat message from assistant"]
+    ) {
+        flex-direction: row !important;
+        margin-right: auto !important;
+        margin-left: 0 !important;
+        background: rgba(15,23,36,0.85) !important;
+        border: 1px solid rgba(52,211,153,0.2) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+    }
+    [data-testid="stChatMessage"]:has(
+        [data-testid="stChatMessageContent"][aria-label="Chat message from assistant"]
+    ):hover {
+        box-shadow: 0 4px 20px rgba(52,211,153,0.12);
+        border-color: rgba(52,211,153,0.35) !important;
+        border-color: rgba(52,211,153,0.45) !important;
+    }
+    [data-testid="stChatMessage"]:has(
+        [data-testid="stChatMessageContent"][aria-label="Chat message from assistant"]
+    ) [data-testid="stChatMessageAvatarCustom"] {
+        background: rgba(52,211,153,0.1) !important;
+        border: 1px solid rgba(52,211,153,0.35) !important;
+        border-radius: 9px !important;
+    }
+
+    /* ── Chat input: igualar padding arriba y abajo ──────────────────────── */
+    [data-testid="stBottomBlockContainer"] {
+        padding-top: 16px !important;
+        padding-bottom: 16px !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,

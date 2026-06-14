@@ -30,7 +30,6 @@ def sidebar_status() -> None:
             n_chunks = 0
         st.caption(f"**Fragmentos indexados:** {n_chunks}")
         st.divider()
-        st.caption("Grupo 7 · Gestión de Documentos Académicos con RAG")
 
 
 @st.cache_data(show_spinner=False)

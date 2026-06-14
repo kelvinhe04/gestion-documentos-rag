@@ -8,8 +8,14 @@ import streamlit as st
 import app_helpers as ah
 
 _PALETTE = [
-    "#38bdf8", "#22d3ee", "#34d399", "#60a5fa",
-    "#f59e0b", "#2dd4bf", "#a3e635", "#fb923c",
+    "#38bdf8",  # azul
+    "#f97316",  # naranja
+    "#34d399",  # verde esmeralda
+    "#c084fc",  # violeta
+    "#fb7185",  # rosa
+    "#facc15",  # amarillo
+    "#2dd4bf",  # teal
+    "#f43f5e",  # rojo
 ]
 _LAYOUT = dict(
     paper_bgcolor="rgba(0,0,0,0)",

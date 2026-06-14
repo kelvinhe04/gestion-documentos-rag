@@ -39,6 +39,20 @@ st.markdown(
         background: #0d1117 !important;
         border-right: 1px solid rgba(56,189,248,0.12) !important;
     }
+    [data-testid="stSidebarNavSeparator"] {
+        background: transparent !important;
+        height: auto !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    [data-testid="stSidebarNavSeparator"]::after {
+        content: '';
+        display: block;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(56,189,248,0.25), transparent);
+        margin: 1.5rem 0;
+    }
 
     /* ── Métrica cards ───────────────────────────────────────────────────── */
     [data-testid="stMetric"] {
@@ -162,6 +176,25 @@ st.markdown(
     [data-testid="stDialog"] .stButton button[kind="primary"]:hover {
         background: linear-gradient(135deg, #0284c7, #0369a1) !important;
         box-shadow: 0 6px 20px rgba(14,165,233,0.45) !important;
+    }
+
+    /* ── Scrollbar ───────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(56,189,248,0.25);
+        border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(56,189,248,0.45);
+    }
+    ::-webkit-scrollbar-corner {
+        background: transparent;
     }
 
     /* ── Multiselect tags (chips) ─────────────────────────────────────────── */

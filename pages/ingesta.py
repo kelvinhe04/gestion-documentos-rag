@@ -1,8 +1,6 @@
 """Página de ingesta: carga PDFs y gestión de documentos indexados."""
 from __future__ import annotations
 
-import time
-
 import streamlit as st
 
 import app_helpers as ah
@@ -92,19 +90,28 @@ if st.session_state.get("_ingesta_uploaded") != uploaded_names:
 
 if "ingesta_resultados" in st.session_state:
     resultados = st.session_state["ingesta_resultados"]
-    ok = [r for r in resultados if r.get("ok")]
-    st.success(f"{len(ok)}/{len(resultados)} documentos indexados.")
-    for r in resultados:
-        if r.get("ok"):
+    ok  = [r for r in resultados if r.get("ok")]
+    err = [r for r in resultados if not r.get("ok")]
+
+    if ok:
+        st.success(f"✅ {len(ok)}/{len(resultados)} documento(s) indexado(s).")
+        for r in ok:
             st.write(f"- **{r['title']}** — {r['chunks']} fragmentos, {r.get('num_pages', '?')} págs.")
-        else:
-            st.write(f"- **{r.get('title')}** — {r.get('reason')}")
-    # Esperar 4 segundos y limpiar todo automáticamente
-    time.sleep(4)
-    st.session_state.pop("ingesta_resultados", None)
-    st.session_state.pop("_ingesta_uploaded", None)
-    st.session_state["_uploader_gen"] = st.session_state.get("_uploader_gen", 0) + 1
-    st.rerun()
+
+    if err:
+        st.error(f"❌ {len(err)} documento(s) no se pudieron indexar:")
+        for r in err:
+            st.write(f"- **{r.get('title', r.get('filename', '?'))}** — {r.get('reason', 'error desconocido')}")
+        st.caption(
+            "Los PDFs escaneados (sin capa de texto) no se pueden indexar sin OCR. "
+            "Los PDFs con texto muy corto tampoco generan fragmentos."
+        )
+
+    if st.button("Cerrar y subir más", key="btn_cerrar_resultados"):
+        st.session_state.pop("ingesta_resultados", None)
+        st.session_state.pop("_ingesta_uploaded", None)
+        st.session_state["_uploader_gen"] = st.session_state.get("_uploader_gen", 0) + 1
+        st.rerun()
 elif uploaded and st.button("Procesar e indexar", type="primary", key="btn_pdf"):
     progress = st.progress(0.0)
     resultados = []

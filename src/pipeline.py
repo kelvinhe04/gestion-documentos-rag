@@ -45,6 +45,14 @@ def ingest_pdf_file(path: str | Path, extra_metadata: Dict[str, Any] | None = No
         }
 
     chunks = chunk_text(text)
+    if not chunks:
+        return {
+            "ok": False,
+            "title": data["title"],
+            "filename": data["filename"],
+            "reason": "El texto extraído es demasiado corto para generar fragmentos.",
+            "chunks": 0,
+        }
     doc_id = _make_doc_id(data["title"], data["filename"])
 
     metadata = {
