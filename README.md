@@ -115,11 +115,11 @@ Copy-Item .env.example .env
 | Mixtral 8x7B | Mezcla | ⚡⚡ Rápido | Tareas variadas | ✅ Gratis |
 | Gemma 2 9B | 9B | ⚡⚡⚡ Ultra rápido | Alternativa ligera | ✅ Gratis |
 
-**Tu proyecto usa:** `llama-3.3-70b-versatile` (potente y preciso)
+**El modelo activo se configura en `.env`** con la variable `GROQ_MODEL`.
 
 **Para cambiar de modelo,** edita `.env`:
 ```env
-GROQ_MODEL=llama-3.3-70b-versatile    # Actual — recomendado
+GROQ_MODEL=llama-3.1-8b-instant    # Actual — rápido y con buen rate limit
 ```
 
 O si no tienes API key, el sistema funciona en **modo extractivo** — sin LLM, solo muestra los fragmentos más relevantes directamente.
