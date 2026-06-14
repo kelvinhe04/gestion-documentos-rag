@@ -32,9 +32,16 @@ PREGUNTA: {question}
 RESPUESTA:"""
 
 
-def _build_context(hits: List[Dict[str, Any]]) -> str:
-    """Construye el bloque de contexto a partir de los fragmentos recuperados."""
-    return "\n\n".join(hit["text"] for hit in hits)
+def _build_context(hits: List[Dict[str, Any]], prev_answer: str = "") -> str:
+    """Construye el bloque de contexto a partir de los fragmentos recuperados.
+
+    Si hay una respuesta previa del bot (pregunta de seguimiento), se antepone
+    como contexto adicional para que el LLM pueda conectar los turnos.
+    """
+    chunks = "\n\n".join(hit["text"] for hit in hits)
+    if prev_answer:
+        return f"[Respuesta anterior del asistente]: {prev_answer}\n\n{chunks}"
+    return chunks
 
 
 def _extractive_answer(hits: List[Dict[str, Any]]) -> str:
@@ -49,6 +56,34 @@ def _extractive_answer(hits: List[Dict[str, Any]]) -> str:
             fragmento = fragmento[:500] + "…"
         partes.append(f"**{i}. {titulo}** (relevancia {hit['score']}):\n{fragmento}")
     return "\n\n".join(partes)
+
+
+def _expand_query(question: str, history: List[Dict[str, Any]]) -> str:
+    """Expande una query corta con contexto del turno anterior (pregunta + respuesta).
+
+    Combina la pregunta anterior del usuario con las primeras palabras de la
+    respuesta del bot para anclar la búsqueda al tema correcto.
+    Solo aplica cuando la query actual es corta (≤8 palabras).
+    """
+    if not history or len(question.split()) > 8:
+        return question
+
+    prev_user = next(
+        (m["content"] for m in reversed(history) if m["role"] == "user"), None
+    )
+    prev_assistant = next(
+        (m["content"] for m in reversed(history) if m["role"] == "assistant"), None
+    )
+
+    parts = [question]
+    if prev_user:
+        parts.append(prev_user)
+    if prev_assistant:
+        # Primeras 30 palabras de la respuesta anterior como contexto de búsqueda
+        summary = " ".join(prev_assistant.split()[:30])
+        parts.append(summary)
+
+    return " ".join(parts)
 
 
 def answer(
@@ -69,10 +104,14 @@ def answer(
     Si se pasa ``doc_ids``, la búsqueda se restringe a esos documentos.
     """
     k = k or config.TOP_K
+    history = history or []
+
+    # Expandir la query con contexto previo para mejorar el retrieval
+    search_query = _expand_query(question, history)
     if doc_ids:
-        hits = vector_store.search_filtered(question, k=k, doc_ids=doc_ids)
+        hits = vector_store.search_filtered(search_query, k=k, doc_ids=doc_ids)
     else:
-        hits = vector_store.search(question, k=k)
+        hits = vector_store.search(search_query, k=k)
 
     if not hits:
         return {
@@ -82,7 +121,14 @@ def answer(
             "provider": "ninguno",
         }
 
-    context = _build_context(hits)
+    # Incluir respuesta previa en el contexto para preguntas de seguimiento cortas
+    prev_answer = ""
+    if len(question.split()) <= 8 and history:
+        prev_answer = next(
+            (m["content"] for m in reversed(history) if m["role"] == "assistant"), ""
+        )
+
+    context = _build_context(hits, prev_answer)
     prompt = PROMPT_TEMPLATE.format(context=context, question=question)
 
     generated = llm.generate(prompt, system=SYSTEM_PROMPT, history=history or [])
