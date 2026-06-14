@@ -53,14 +53,15 @@ st.divider()
 df_docs = pd.DataFrame(stats["documents"])
 
 st.subheader("Fragmentos por documento")
-df_top = df_docs.sort_values("chunks", ascending=False).head(12)
+df_top = df_docs.sort_values("chunks", ascending=False)
+altura = max(400, len(df_top) * 45)
 fig2 = px.bar(
     df_top, x="chunks", y="title", orientation="h",
     labels={"chunks": "Fragmentos", "title": ""},
     color_discrete_sequence=_PALETTE,
 )
 fig2.update_layout(
-    margin=dict(t=10, b=10, l=10, r=10), height=320,
+    margin=dict(t=10, b=10, l=10, r=10), height=altura,
     yaxis=dict(autorange="reversed"), **_LAYOUT,
 )
 st.plotly_chart(fig2, width="stretch")
