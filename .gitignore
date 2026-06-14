@@ -40,3 +40,4 @@ Thumbs.db
 # Agente / herramientas
 .agents/
 skills-lock.json
+.playwright-mcp/
