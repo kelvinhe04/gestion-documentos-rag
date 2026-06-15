@@ -123,6 +123,9 @@ elif uploaded and st.button("Procesar e indexar", type="primary", key="btn_pdf")
                 res = pipeline.ingest_pdf_file(dest)
             except Exception as exc:  # noqa: BLE001
                 res = {"ok": False, "title": file.name, "reason": str(exc), "chunks": 0}
+            finally:
+                if not res.get("ok") and dest.exists():
+                    dest.unlink(missing_ok=True)
         resultados.append(res)
         progress.progress(i / len(uploaded))
 

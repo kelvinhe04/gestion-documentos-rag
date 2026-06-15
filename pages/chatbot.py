@@ -9,6 +9,15 @@ from src import chat_sessions, config
 from src.rag import rag_pipeline
 
 
+_CLEANUP_JS = (
+    "setInterval(function(){"
+    "var i=document.querySelector('[data-testid=\"stChatInput\"]');"
+    "var b=document.getElementById('rag-scroll-btn');"
+    "if(!i&&b)b.remove();"
+    "},300);"
+)
+
+
 def _chat_scroll_ui(auto_scroll: bool = False) -> None:
     """Inyecta el botón flotante ↓ y (opcionalmente) auto-scroll al fondo."""
     components.html(
@@ -166,6 +175,14 @@ def _chat_scroll_ui(auto_scroll: bool = False) -> None:
             win.addEventListener('scroll', updateBtn, {{ passive: true }});
             setInterval(updateBtn, 400);
             updateBtn();
+
+            // Script persistente en <head> del padre: sobrevive destrucción del iframe
+            if (!doc.getElementById('rag-scroll-cleanup')) {{
+                const s = doc.createElement('script');
+                s.id = 'rag-scroll-cleanup';
+                s.textContent = {repr(_CLEANUP_JS)};
+                doc.head.appendChild(s);
+            }}
         }})();
         </script>
         """,
