@@ -5,6 +5,9 @@ protobuf>=3.20.0,<4.0.0    # Fijar versión compatible con chromadb/opentelemetr
 onnxruntime>=1.18.0        # Backend ONNX para embeddings
 fastembed>=0.4.0           # Embeddings multilingües vía ONNX (sin PyTorch)
 pypdf>=5.1.0              # Carga y procesamiento de PDFs
+pymupdf>=1.24.0           # Renderizado de páginas PDF a imagen (para OCR de escaneados)
+pytesseract>=0.3.13       # OCR fallback para PDFs sin capa de texto (requiere Tesseract instalado)
+pillow>=10.0.0            # Procesamiento de imágenes para OCR
 
 # ===== LLM para el chatbot RAG =====
 groq>=0.13.0              # Proveedor por defecto (modelos open source: Llama 3)

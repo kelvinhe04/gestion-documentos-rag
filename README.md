@@ -27,7 +27,7 @@ contenido** mediante **RAG** (Retrieval-Augmented Generation), todo desde un
 
 | Requisito | Cómo se cumple |
 |-----------|----------------|
-| **Carga y procesamiento de PDFs** | `src/ingestion/pdf_loader.py` (pypdf) + pipeline en `src/pipeline.py`. |
+| **Carga y procesamiento de PDFs** | `src/ingestion/pdf_loader.py` (pypdf + OCR fallback con pytesseract/pymupdf para PDFs escaneados) + pipeline en `src/pipeline.py`. |
 | **Indexación con ChromaDB** | `src/indexing/vector_store.py` (cliente persistente + embeddings). |
 | **Búsqueda semántica** | Página *Búsqueda Semántica* + `vector_store.search()` (distancia coseno). |
 | **Chatbot con RAG funcional** | `src/rag/rag_pipeline.py` + página *Chatbot RAG*. |
@@ -67,6 +67,21 @@ contenido** mediante **RAG** (Retrieval-Augmented Generation), todo desde un
 ### 1. Requisitos previos
 - Python 3.10+ (probado en 3.11)
 - Conexión a internet (la primera vez descarga el modelo de embeddings)
+- **Tesseract OCR** (opcional, solo si necesitas indexar PDFs escaneados sin capa de texto)
+
+#### Instalar Tesseract en Windows
+
+1. Descarga el instalador desde **https://github.com/UB-Mannheim/tesseract/wiki** (versión `tesseract-ocr-w64-setup-5.x.x.exe`)
+2. Durante la instalación, marca el idioma adicional **Spanish**
+3. Verifica la instalación:
+   ```powershell
+   tesseract --version
+   ```
+
+> Si Tesseract no queda en el PATH, el sistema lo busca automáticamente en `C:\Program Files\Tesseract-OCR\`. También puedes sobrescribir la ruta en `.env`:
+> ```env
+> TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
+> ```
 
 ### 2. Crear entorno virtual e instalar dependencias
 
