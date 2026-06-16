@@ -255,12 +255,10 @@ def search(query: str, k: int | None = None) -> List[Dict[str, Any]]:
     # Fusión RRF
     merged = _rrf_merge(semantic_hits, bm25_hits)
 
-    # Aplicar límite por documento y score mínimo
+    # Aplicar límite por documento (sin filtro MIN_SCORE: RRF produce scores < 0.05, incompatible con el umbral coseno)
     hits: List[Dict] = []
     doc_count: Dict[str, int] = {}
     for hit in merged:
-        if hit["score"] < config.MIN_SCORE:
-            continue
         doc_id = hit["metadata"].get("doc_id", "")
         if doc_count.get(doc_id, 0) >= config.MAX_CHUNKS_PER_DOC:
             continue
